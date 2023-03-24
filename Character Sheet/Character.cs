@@ -1,38 +1,39 @@
-﻿//namespace CharSheet
-//{
-//    class Char  // base class (parent) 
-//    {
-//        public string cName { get; set; }
-//        public string raceName { get; set; } // race field
-//        public string cClass { get; set; }  // class field
-//        public int cLevel { get; set; }
-//        public int cMaxHealth { get; set; }
-//        public int cCurrentHitPoints { get; set; }
-//        public int cStrength { get; set; }
-//        public int cIntelligence { get; set; }
-//        public int cWisdom { get; set; }
-//        public int cCharisma { get; set; }
-//        public int cConstitution { get; set; }
-//        public int cDexterity { get; set; }
-//        public int cAge { get; set; }
-//        public int cSpeed { get; set; }
-//        public string[] cLanguages { get; set; }
+﻿using System;
+using CharSheet;
 
-//        public Char()
-//        {
-//            Console.WriteLine("Character name?");
-//            cName = Console.ReadLine();
-//            Console.WriteLine("Character race?");
-//            raceName = Console.ReadLine();
-//            Console.WriteLine("Character class?");
-//            cClass = Console.ReadLine();
-//            Console.WriteLine("Character level?");
-//            cLevel = Console.ReadLine();
-//            //if (cClass == "Fighter")
-//            //{
-//            //    cMaxHealth = Random.
+namespace PlayerCharacter
+{
+    public class AbilityScores
+    {
+        public int Strength { get; set; }
+        public int Dexterity { get; set; }
+        public int Constitution { get; set; }
+        public int Intelligence { get; set; }
+        public int Wisdom { get; set; }
+        public int Charisma { get; set; }
+    }
 
-//            //}
-//        }
-//    }
-//}
+    public class DnD5ePlayerCharacter
+    {
+        public string Name { get; set; }
+        public string Race { get; set; }
+        public string Class { get; set; }
+        public int Level { get; set; }
+        public AbilityScores AbilityScores { get; set; }
+        public int HitPoints { get; set; }
+        public string Background { get; set; }
+        public string Alignment { get; set; }
+
+        public DnD5ePlayerCharacter(string name, string race, string characterClass, int level, AbilityScores abilityScores, int hitPoints, string background, string alignment)
+        {
+            Name = name;
+            Race = race;
+            Class = characterClass;
+            Level = level;
+            AbilityScores = abilityScores;
+            HitPoints = hitPoints;
+            Background = background;
+            Alignment = alignment;
+        }
+    }
+}

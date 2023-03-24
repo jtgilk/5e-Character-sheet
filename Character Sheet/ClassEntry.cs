@@ -1,113 +1,144 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace CharSheet
 {
     public class ClassEntry
     {
-        [JsonProperty(PropertyName = "name")]
-        public string ClassName { get; set; }
 
-        [JsonProperty(PropertyName = "hit_dice")]
-        public int HitDice { get; set; }
+        public string index { get; set; }
+        public string name { get; set; }
+        public int hit_die { get; set; }
+        public List<ProficiencyChoice> proficiency_choices { get; set; }
+        public List<Proficiency> proficiencies { get; set; }
+        public List<SavingThrow> saving_throws { get; set; }
+        public List<StartingEquipment> starting_equipment { get; set; }
+        public List<StartingEquipmentOption> starting_equipment_options { get; set; }
+        public string class_levels { get; set; }
+        public MultiClassing multi_classing { get; set; }
+        public List<Subclass> subclasses { get; set; }
+        public string url { get; set; }
 
-        [JsonProperty(PropertyName = "proficiency_choices")]
-        public ProficiencyChoices[] ProficiencyChoices { get; set; }
+        public class AbilityScore
+        {
+            public string index { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+        }
 
-        [JsonProperty(PropertyName = "proficiencies")]
-        public Proficiencies[] Proficiencies { get; set; }
+        public class Choice
+        {
+            public string desc { get; set; }
+            public int choose { get; set; }
+            public string type { get; set; }
+            public From from { get; set; }
+        }
 
-        [JsonProperty(PropertyName = "saving_throws")]
-        public SavingThrows[] SavingThrows { get; set; }
+        public class Equipment
+        {
+            public string index { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+        }
 
-        [JsonProperty(PropertyName = "starting_equipment")]
-        public StartingEquip[] StartingEquip { get; set; }
+        public class EquipmentCategory
+        {
+            public string index { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+        }
 
-        [JsonProperty(PropertyName = "starting_equipment_options")]
-        public StartingEquipOptions[] StartingEquipOptions { get; set; }
+        public class From
+        {
+            public string option_set_type { get; set; }
+            public List<Option> options { get; set; }
+            public EquipmentCategory equipment_category { get; set; }
+        }
 
-        [JsonProperty(PropertyName = "class_levels")]
-        public string ClassLevelsUrl { get; set; }
+        public class Item
+        {
+            public string index { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+        }
 
-        [JsonProperty(PropertyName = "subclasses")]
-        public Subclasses[] Subclasses { get; set; }
+        public class MultiClassing
+        {
+            public List<Prerequisite> prerequisites { get; set; }
+            public List<Proficiency> proficiencies { get; set; }
+        }
 
-        [JsonProperty(PropertyName = "url")]
-        public string Url { get; set; }
+        public class Of
+        {
+            public string index { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+        }
+
+        public class Option
+        {
+            public string option_type { get; set; }
+            public Item item { get; set; }
+            public int count { get; set; }
+            public Of of { get; set; }
+            public Choice choice { get; set; }
+        }
+
+        public class Prerequisite
+        {
+            public AbilityScore ability_score { get; set; }
+            public int minimum_score { get; set; }
+        }
+
+        public class Proficiency
+        {
+            public string index { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+        }
+
+        public class ProficiencyChoice
+        {
+            public string desc { get; set; }
+            public int choose { get; set; }
+            public string type { get; set; }
+            public From from { get; set; }
+        }
+
+
+
+
+
+        public class SavingThrow
+        {
+            public string index { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+        }
+
+        public class StartingEquipment
+        {
+            public Equipment equipment { get; set; }
+            public int quantity { get; set; }
+        }
+
+        public class StartingEquipmentOption
+        {
+            public string desc { get; set; }
+            public int choose { get; set; }
+            public string type { get; set; }
+            public From from { get; set; }
+        }
+
+        public class Subclass
+        {
+            public string index { get; set; }
+            public string name { get; set; }
+            public string url { get; set; }
+        }
     }
-
-    public class Proficiencies
-    {
-        [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
-
-        [JsonProperty(PropertyName = "url")]
-        public string URL { get; set; }
-    }
-    public class ProficiencyChoices
-    {
-        [JsonProperty(PropertyName = "desc")]
-        public string ProfChoiceDesc { get; set; }
-
-        [JsonProperty(PropertyName = "choose")]
-        public int PropChoiceNum { get; set; }
-
-        [JsonProperty(PropertyName = "from")]
-        public ProfChoiceFrom PropChoiceFrom { get; set; }
-    }
-
-    public class ProfChoiceFrom
-    {
-        [JsonProperty(PropertyName = "options")]
-        public ProfChoiceOptions ProfChoiceOptions { get; set; }
-    }
-    public class ProfChoiceOptions
-    {
-        [JsonProperty(PropertyName = "item")]
-        public ProfChoiceOptionsItems ProfChoiceOptionsItems { get; set; }
-    }
-    public class ProfChoiceOptionsItems
-    {
-        [JsonProperty(PropertyName = "name")]
-        public string ProfChoiceOptionsItemsName { get; set; }
-        [JsonProperty(PropertyName = "url")]
-        public string Url { get; set; }
-    }
-    public class SavingThrows
-    {
-        [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
-
-        [JsonProperty(PropertyName = "url")]
-        public string URL { get; set; }
-    }
-    public class StartingEquip
-    {
-        [JsonProperty(PropertyName = "equipment")]
-        public StartingEquipEquipment StartingEquipEquipment { get; set; }
-
-        [JsonProperty(PropertyName = "quantity")]
-        public double quantity { get; set; }
-    }
-    public class StartingEquipEquipment
-    {
-        [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
-
-        [JsonProperty(PropertyName = "url")]
-        public string URL { get; set; }
-    }
-    public class StartingEquipOptions
-    {
-        [JsonProperty(PropertyName = "desc")]
-        public string StartingEquipOptionsDesc { get; set; }
-    }
-    public class Subclasses
-    {
-        [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
-
-        [JsonProperty(PropertyName = "url")]
-        public string URL { get; set; }
-    }
-
 }

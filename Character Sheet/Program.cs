@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Reflection.Emit;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace CharSheet
@@ -26,14 +27,14 @@ namespace CharSheet
         public static async Task Main(string[] args)
         {
             Console.WriteLine("Welcome to the 5e character creator.\r\nPlease enter the name of the character you wish to create to get started.");
-            string CharacterName = Console.ReadLine();
+            string characterName = Console.ReadLine();
             Console.Clear();
             using var client = new HttpClient();
 
             // Set the base URL of the API endpoint you want to call
             client.BaseAddress = new Uri("https://www.dnd5eapi.co/api/");
         RaceChoice:
-            Console.WriteLine("What race is " + CharacterName + "?");
+            Console.WriteLine("What race is " + characterName + "?");
             // Print the numbered list of races to the console
             Console.WriteLine("Choose a race from the following options:");
             int index = 1;
@@ -47,7 +48,7 @@ namespace CharSheet
             Console.Write("Enter the number of the race you want to choose: ");
             string userChoiceString = Console.ReadLine();
             // Validate the user's choice
-            string chosenRace ="";
+            string chosenRace = "";
             if (int.TryParse(userChoiceString, out int userChoice) && userChoice > 0 && userChoice <= DnD5eRaces.Count)
             {
                 chosenRace = DnD5eRaces.ElementAt(userChoice - 1);
@@ -64,7 +65,7 @@ namespace CharSheet
 
 
         ClassChoice:
-            Console.WriteLine(CharacterName + " the " + chosenRace + " is a... what was it again?");
+            Console.WriteLine(characterName + " the " + chosenRace + " is a... what was it again?");
             // Print the numbered list of classes to the console
             Console.WriteLine("Choose a class from the following options:");
             index = 1;
@@ -92,12 +93,19 @@ namespace CharSheet
                 Console.WriteLine("Invalid choice. Please choose a class number from the list. Try again");
                 goto ClassChoice;
             }
+            Console.Write("What level is " + characterName + "?\r\n");
+            int charLevel;
+            bool isValid = int.TryParse(Console.ReadLine(), out charLevel);
 
-            //Console.WriteLine("What class is " + CharacterName + "?");
-            //string PlayerClassChoice = Console.ReadLine();
-            //if (IsValidDnD5eClass(PlayerClassChoice))
-            //{
-            HttpResponseMessage response = await client.GetAsync("/api/classes/" + chosenClass.ToLower());;
+            while (!isValid || charLevel < 1 || charLevel >= 20)
+            {
+                Console.WriteLine("Invalid input. Please enter an integer between 1 and 20: ");
+                isValid = int.TryParse(Console.ReadLine(), out charLevel);
+            }
+
+
+            //Call the API with the class choice
+            HttpResponseMessage response = await client.GetAsync("/api/classes/" + chosenClass.ToLower()); ;
 
             // Read the response content as a string
 
@@ -105,19 +113,19 @@ namespace CharSheet
             //CharEntry myDeserializedClass = JsonConvert.DeserializeObject(responseBody);
 
             // Do something with the response data
-            ClassEntry? ClassReturn = JsonSerializer.Deserialize<ClassEntry>(responseBody);
+            ClassEntry? classReturn = JsonSerializer.Deserialize<ClassEntry>(responseBody);
             Console.Clear();
 
             //Choose the proficiencies
-            Console.WriteLine(CharacterName + " the " + chosenRace + " " + chosenClass);
+            Console.WriteLine(characterName + " the " + chosenRace + " " + chosenClass);
             Console.WriteLine("So what are they proficient at?");
-            int[] profchoices = ChooseProficiencies(ClassReturn);
+            int[] profchoices = ChooseProficiencies(classReturn);
             //return the choices
             Console.Clear();
             Console.WriteLine("You have chosen:");
             for (int i = 0; i < profchoices.Length; i++)
             {
-                string source = ClassReturn.proficiency_choices[0].from.options[profchoices[i]-1].item.name;
+                string source = classReturn.proficiency_choices[0].from.options[profchoices[i] - 1].item.name;
                 string toRemove = "Skill: ";
                 string result = string.Empty;
                 int j = source.IndexOf(toRemove);
@@ -135,48 +143,58 @@ namespace CharSheet
                     Console.WriteLine(result);
                 }
             }
-            //Roll the stats
+            Console.WriteLine(chosenClass + " also has the following proficiencies by default:");
+            for (int i = 0; i < classReturn.proficiencies.Count; i++)
+            {
+                Console.Write(classReturn.proficiencies[i].name);
+                if (i == classReturn.proficiencies.Count - 2)
+                {
+                    Console.Write(", & ");
+                }
+                else if (i != classReturn.proficiencies.Count - 1)
+                {
+                    Console.Write(", ");
+                }
+                //System.Threading.Thread.Sleep(1000);
+            }
+            Console.WriteLine("\r\nPress enter to continue");
             Console.ReadLine();
-        //}
+            Console.Clear();
+            //Roll the stats
+            Console.WriteLine("Alright! Lets roll some stats! Everyone loves math right?!");
+            //I know this is probably redundent, it's something to optimize later.
+            int hitDiceNumber = classReturn.hit_die;
+            Console.WriteLine("Did you know " + chosenClass + " has a d" + hitDiceNumber + " for a hitdice?");
+            if (hitDiceNumber < 10)
+            {
+                Console.WriteLine("So, yeah, " + characterName + " probably doesn't wanna be your main tank...\r\nOh well, mage armor is always a thing I guess, or maybe they can dodge well!");
+            }
+            if (hitDiceNumber == 10) 
+            {
+                Console.WriteLine(characterName + " is a bit of a beefy lad/lass/eldritch horror/*insert your own witty bit here*, don't let them get at your wizards!");
+            }
+            if (hitDiceNumber > 10)
+            {
+                Console.WriteLine("Oh my, "+ characterName + " has got some bulk to them.\r\nLet's hope that keeps them on thier feet/wings/fins/or whatever.");
+            }
+            Console.WriteLine();
+            //Call the actual method to roll the stats
+            CreateAndReturnStats(hitDiceNumber, charLevel);
+            Console.ReadLine();
 
-        //else
-        //{
-        //    Console.WriteLine($"{PlayerClassChoice} is not a valid DnD 5e class.");
-        //    Console.WriteLine("Would you like to try again? Y/N?");
-        //    string RedoChoice = Console.ReadLine();
-        //    if (RedoChoice == "Y" || RedoChoice == "y" || RedoChoice == "yes" || RedoChoice == "Yes")
-        //    {
-        //        goto ClassChoice;
-        //    }
-        //    else
-        //    {
-        //        goto End;
-        //    }
-        //}
-
-        // Call the API endpoint and get the response
-
-
-        //Console.WriteLine(ClassReturn.proficiencies.Count);
-        //foreach (var i in ClassReturn.proficiencies.Count)
-        //{
-        //    Console.WriteLine(ClassReturn.proficiencies[i].name);
-        //}
-        //  Console.WriteLine(ClassEntry1?.hit_die);
         End:;
 
         }
-        static int[] ChooseProficiencies(ClassEntry ClassReturn)
+        static int[] ChooseProficiencies(ClassEntry classReturn)
         {
-            int ChoiceNum = ClassReturn.proficiency_choices[0].choose;
-            Console.WriteLine("Choose " + ChoiceNum + " from the following options");
+            int choiceNum = classReturn.proficiency_choices[0].choose;
+            Console.WriteLine("Choose " + choiceNum + " from the following options");
 
             //List all choices and remove the Skill: part from the string
-            int CRProfsChoice = ClassReturn.proficiency_choices[0].from.options.Count;
-            var CRProfsChoiceNormalize = CRProfsChoice - 1;
-            for (int i = 1; i <= CRProfsChoice; i++)
+            int charProficienciesChoice = classReturn.proficiency_choices[0].from.options.Count;
+            for (int i = 1; i <= charProficienciesChoice; i++)
             {
-                string source = ClassReturn.proficiency_choices[0].from.options[i-1].item.name;
+                string source = classReturn.proficiency_choices[0].from.options[i - 1].item.name;
                 string toRemove = "Skill: ";
                 string result = string.Empty;
                 int j = source.IndexOf(toRemove);
@@ -186,47 +204,36 @@ namespace CharSheet
                 }
                 Console.WriteLine("[" + i + "]" + result);
             }
-            int[] returnchoices = new int[ChoiceNum];
+            int[] returnChoices = new int[choiceNum];
             //Choose the options
-            for (int i = 1; i <= ChoiceNum; i++)
+            for (int i = 1; i <= choiceNum; i++)
             {
             ProfsChoice:
-                string playerchoicestring = Console.ReadLine();
-                int playerchoice;
-                if (string.IsNullOrWhiteSpace(playerchoicestring) || !int.TryParse(playerchoicestring, out playerchoice) || playerchoice < 1 || playerchoice > CRProfsChoice)
+                string playerChoiceString = Console.ReadLine();
+                int playerChoice;
+                if (string.IsNullOrWhiteSpace(playerChoiceString) || !int.TryParse(playerChoiceString, out playerChoice) || playerChoice < 1 || playerChoice > charProficienciesChoice)
                 {
-                    Console.WriteLine("Invalid input. Please enter a non-blank integer between 1 & " + CRProfsChoice + ".");
+                    Console.WriteLine("Invalid input. Please enter a non-blank integer between 1 & " + charProficienciesChoice + ". ");
                     goto ProfsChoice;
                 }
-                returnchoices[i - 1] = playerchoice;
+                returnChoices[i - 1] = playerChoice;
             }
             //Choose and check that the choices are valid integers in the list
-            return returnchoices;
-        }
-        static bool IsValidDnD5eClass(string input)
-        {
-            return DnD5eClasses.Contains(input.Trim(), StringComparer.OrdinalIgnoreCase);
+            return returnChoices;
         }
 
-        static bool IsValidDnD5eRace(string input)
+        static void CreateAndReturnStats(int hitDiceNumber, int charLevel)
         {
-            return DnD5eRaces.Contains(input.Trim(), StringComparer.OrdinalIgnoreCase);
-        }
-
-        static void CreateAndReturnStats()
-        {
-            CharacterStats stats = DnD5eCharacterStatsRoller.RollCharacterStats();
+            CharacterStats stats = DnD5eCharacterStatsRoller.RollCharacterStats(hitDiceNumber, charLevel);
 
             Console.WriteLine("Your character's stats are:");
-            Console.WriteLine($"Strength: {stats.Strength}");
-            Console.WriteLine($"Dexterity: {stats.Dexterity}");
-            Console.WriteLine($"Constitution: {stats.Constitution}");
-            Console.WriteLine($"Intelligence: {stats.Intelligence}");
-            Console.WriteLine($"Wisdom: {stats.Wisdom}");
-            Console.WriteLine($"Charisma: {stats.Charisma}");
-
-            Console.ReadLine();
+            Console.WriteLine($"Hitpoints: {stats.HitPoints}     Hit dice: {hitDiceNumber}");
+            Console.WriteLine($"Strength: {stats.Strength}    STR({stats.strMod})");
+            Console.WriteLine($"Dexterity: {stats.Dexterity}    DEX({stats.dexMod})");
+            Console.WriteLine($"Constitution: {stats.Constitution}    CON({stats.conMod})");
+            Console.WriteLine($"Intelligence: {stats.Intelligence}    INT({stats.intMod})");
+            Console.WriteLine($"Wisdom: {stats.Wisdom}    WIS({stats.wisMod})");
+            Console.WriteLine($"Charisma: {stats.Charisma}    CHA({stats.chaMod})");
         }
-
     }
 }

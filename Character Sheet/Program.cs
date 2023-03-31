@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PlayerCharacter;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -135,8 +136,10 @@ namespace CharSheet
             //return the choices
             Console.Clear();
             Console.WriteLine("You have chosen:");
+            string[] profResults = new string[profchoices.Length];
             for (int i = 0; i < profchoices.Length; i++)
             {
+                
                 string source = classReturn.proficiency_choices[0].from.options[profchoices[i] - 1].item.name;
                 string toRemove = "Skill: ";
                 string result = string.Empty;
@@ -149,10 +152,12 @@ namespace CharSheet
                 {
                     Console.WriteLine(result);
                     Console.WriteLine("&");
+                    profResults[i] = result;
                 }
                 else
                 {
                     Console.WriteLine(result);
+                    profResults[i] = result;
                 }
             }
             Console.WriteLine(chosenClass + " also has the following proficiencies by default:");
@@ -193,10 +198,63 @@ namespace CharSheet
             Console.WriteLine();
 
             //Call the actual method to roll the stats
-            CreateAndReturnStats(hitDiceNumber, charLevel, racialBonuses);
+            int[] stats = CreateAndReturnStats(hitDiceNumber, charLevel, racialBonuses);
             //End stat roll
 
-            Console.ReadLine();
+            AbilityScores abilityScores = new AbilityScores();
+            abilityScores.Strength= stats[0];
+            abilityScores.Dexterity = stats[1];
+            abilityScores.Constitution = stats[2];
+            abilityScores.Intelligence= stats[3];
+            abilityScores.Wisdom = stats[4];
+            abilityScores.Charisma= stats[5];
+            DnD5ePlayerCharacter playerCharacter = new DnD5ePlayerCharacter(characterName, chosenRace, chosenClass, charLevel, abilityScores, stats[6]);
+
+            //update and add bonuses to chosen proficiencies
+            //foreach (string prof in profResults)
+            //{
+            //    if (playerCharacter.CharacterSkills.Skills.ContainsKey(prof))
+            //    {
+            //        Skill skill = playerCharacter.CharacterSkills.Skills[prof];
+            //        skill.Proficiency = true;
+            //        skill.Bonus = playerCharacter.CharacterSkills.GetTotalBonus(abilityScore)
+            //        skill.Bonus += playerCharacter.CharacterSkills.
+                   
+            //    }
+            //}
+
+
+
+
+            Console.WriteLine(playerCharacter.Name + "the " + playerCharacter.Race + " is a mighty " + playerCharacter.Class + ".");
+            switch (playerCharacter.Level)
+            {
+                case 1: Console.WriteLine("They are of the " + playerCharacter.Level + "st level."); break;
+                case 2: Console.WriteLine("They are of the " + playerCharacter.Level + "nd level."); break;
+                case 3: Console.WriteLine("They are of the " + playerCharacter.Level + "rd level."); break;
+                default: Console.WriteLine("They are of the " + playerCharacter.Level + "th level."); break;
+            }
+            Console.WriteLine("If one were to attempt to numerate thier might they might say they are about a " + playerCharacter.AbilityScores.Strength + " or so.");
+            Console.WriteLine("If one were to attempt to put a rating to thier incredible agility, I'd say it's about a " + playerCharacter.AbilityScores.Dexterity + ".");
+            Console.WriteLine("And with such fortititude! My, it's like it's a  " + playerCharacter.AbilityScores.Constitution + "!");
+            Console.WriteLine("But what of thier mind?! Such vast knowledge, as intelligent as say... a solid " + playerCharacter.AbilityScores.Intelligence + ".");
+            Console.WriteLine("And thier incredible wisdom! They got street smarts of like " + playerCharacter.AbilityScores.Wisdom + ", no one is fooling them!");
+            Console.WriteLine("And so charming! Watch out you foolish undead, even you can't stand up to thier " + playerCharacter.AbilityScores.Charisma + "!");
+            Console.WriteLine();
+            Console.WriteLine("Did you want more infromation? Y/N");
+            string continueOn = Console.ReadLine();
+            if (continueOn == "Y" || continueOn == "y" || continueOn == "yes" || continueOn == "Yes")
+            {
+                CharacterSkills characterSkills = playerCharacter.CharacterSkills;
+                foreach (KeyValuePair<string, Skill> kvp in characterSkills.Skills)
+                {
+                    Console.WriteLine("{0}: {1} ({2})", kvp.Key, kvp.Value.Proficiency ? "proficient" : "not proficient", kvp.Value.Bonus);
+                }
+            }
+
+
+
+                Console.ReadLine();
 
         End:;
 
@@ -238,7 +296,7 @@ namespace CharSheet
             return returnChoices;
         }
 
-        static void CreateAndReturnStats(int hitDiceNumber, int charLevel, int[] racialBonuses)
+        static int[] CreateAndReturnStats(int hitDiceNumber, int charLevel, int[] racialBonuses)
         {
             CharacterStats stats = DnD5eCharacterStatsRoller.RollCharacterStats(hitDiceNumber, charLevel, racialBonuses);
 
@@ -253,6 +311,11 @@ namespace CharSheet
             Console.WriteLine("You have a racial bonus of " + racialBonuses[0] + " to STR," + racialBonuses[1] + " to DEX, "
                 + racialBonuses[2] + " to CON, " + racialBonuses[3] + " to INT, " + racialBonuses[4] +
                 " to WIS, and " + racialBonuses[5] + " to CHA,");
+            int[] statSave = new int[7];
+            statSave[0] = stats.Strength; statSave[1] = stats.Dexterity; statSave[2] = stats.Constitution;
+            statSave[3] = stats.Intelligence; statSave[4] = stats.Wisdom; statSave[5] = stats.Charisma;
+            statSave[6] = stats.HitPoints;
+            return statSave;
         }
 
         static int[] RacialBonuses(RaceEntry raceReturn)

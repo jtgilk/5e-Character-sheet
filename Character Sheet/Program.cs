@@ -139,7 +139,7 @@ namespace CharSheet
             string[] profResults = new string[profchoices.Length];
             for (int i = 0; i < profchoices.Length; i++)
             {
-                
+
                 string source = classReturn.proficiency_choices[0].from.options[profchoices[i] - 1].item.name;
                 string toRemove = "Skill: ";
                 string result = string.Empty;
@@ -187,13 +187,13 @@ namespace CharSheet
             {
                 Console.WriteLine("So, yeah, " + characterName + " probably doesn't wanna be your main tank...\r\nOh well, mage armor is always a thing I guess, or maybe they can dodge well!");
             }
-            if (hitDiceNumber == 10) 
+            if (hitDiceNumber == 10)
             {
                 Console.WriteLine(characterName + " is a bit of a beefy lad/lass/eldritch horror/*insert your own witty bit here*, don't let them get at your wizards!");
             }
             if (hitDiceNumber > 10)
             {
-                Console.WriteLine("Oh my, "+ characterName + " has got some bulk to them.\r\nLet's hope that keeps them on thier feet/wings/fins/or whatever.");
+                Console.WriteLine("Oh my, " + characterName + " has got some bulk to them.\r\nLet's hope that keeps them on thier feet/wings/fins/or whatever.");
             }
             Console.WriteLine();
 
@@ -202,30 +202,26 @@ namespace CharSheet
             //End stat roll
 
             AbilityScores abilityScores = new AbilityScores();
-            abilityScores.Strength= stats[0];
+            abilityScores.Strength = stats[0];
             abilityScores.Dexterity = stats[1];
             abilityScores.Constitution = stats[2];
-            abilityScores.Intelligence= stats[3];
+            abilityScores.Intelligence = stats[3];
             abilityScores.Wisdom = stats[4];
-            abilityScores.Charisma= stats[5];
-            DnD5ePlayerCharacter playerCharacter = new DnD5ePlayerCharacter(characterName, chosenRace, chosenClass, charLevel, abilityScores, stats[6]);
-
-            //update and add bonuses to chosen proficiencies
+            abilityScores.Charisma = stats[5];
+            //CharacterSkills characterSkills = new CharacterSkills();
             //foreach (string prof in profResults)
             //{
-            //    if (playerCharacter.CharacterSkills.Skills.ContainsKey(prof))
+            //    if (characterSkills.Skills.ContainsKey(prof))
             //    {
-            //        Skill skill = playerCharacter.CharacterSkills.Skills[prof];
+            //        Skill skill = characterSkills.Skills[prof];
             //        skill.Proficiency = true;
-            //        skill.Bonus = playerCharacter.CharacterSkills.GetTotalBonus(abilityScore)
-            //        skill.Bonus += playerCharacter.CharacterSkills.
-                   
+            //        skill.Bonus += 2;
             //    }
             //}
+            DnD5ePlayerCharacter playerCharacter = new DnD5ePlayerCharacter(characterName, chosenRace, chosenClass, charLevel, abilityScores, stats[6], profResults);
 
-
-
-
+            //update and add bonuses to chosen proficiencies
+            Console.Clear();
             Console.WriteLine(playerCharacter.Name + "the " + playerCharacter.Race + " is a mighty " + playerCharacter.Class + ".");
             switch (playerCharacter.Level)
             {
@@ -245,8 +241,7 @@ namespace CharSheet
             string continueOn = Console.ReadLine();
             if (continueOn == "Y" || continueOn == "y" || continueOn == "yes" || continueOn == "Yes")
             {
-                CharacterSkills characterSkills = playerCharacter.CharacterSkills;
-                foreach (KeyValuePair<string, Skill> kvp in characterSkills.Skills)
+                foreach (KeyValuePair<string, Skill> kvp in playerCharacter.CharacterSkills.Skills)
                 {
                     Console.WriteLine("{0}: {1} ({2})", kvp.Key, kvp.Value.Proficiency ? "proficient" : "not proficient", kvp.Value.Bonus);
                 }
@@ -254,7 +249,7 @@ namespace CharSheet
 
 
 
-                Console.ReadLine();
+            Console.ReadLine();
 
         End:;
 
@@ -290,8 +285,12 @@ namespace CharSheet
                     Console.WriteLine("Invalid input. Please enter a non-blank integer between 1 & " + charProficienciesChoice + ". ");
                     goto ProfsChoice;
                 }
+                if (returnChoices.Contains(playerChoice))
+                {
+                    Console.WriteLine("You seem to have chosen the same skill more than once, try again.");
+                    goto ProfsChoice;
+                }
                 returnChoices[i - 1] = playerChoice;
-
             }
             return returnChoices;
         }
@@ -322,11 +321,11 @@ namespace CharSheet
         {
             //self reference => str dex con int wis cha
             int[] racialBonuses = { 0, 0, 0, 0, 0, 0 };
-            
-            for(int i = 0; i < raceReturn.ability_bonuses.Count; i++)
+
+            for (int i = 0; i < raceReturn.ability_bonuses.Count; i++)
             {
                 string indexFloat = raceReturn.ability_bonuses[i].ability_score.index;
-                switch(indexFloat)
+                switch (indexFloat)
                 {
                     case "str":
                         racialBonuses[0] = raceReturn.ability_bonuses[i].bonus; break;

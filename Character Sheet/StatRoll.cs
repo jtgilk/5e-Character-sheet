@@ -37,47 +37,29 @@ namespace CharSheet
             wisMod = GetModifier(Wisdom);
             chaMod = GetModifier(Charisma);
         }
+
     }
 
     public class DnD5eCharacterStatsRoller
     {
         private static Random _rand = new Random();
 
-        public static CharacterStats RollCharacterStats(int hitDiceNumber, int charLevel)
+        public static CharacterStats RollCharacterStats(int hitDiceNumber, int charLevel, int[] racialBonuses)
         {
             CharacterStats stats = new CharacterStats
             {
-                Strength = RollStat(),
-                Dexterity = RollStat(),
-                Constitution = RollStat(),
-                Intelligence = RollStat(),
-                Wisdom = RollStat(),
-                Charisma = RollStat(),
+
+                Strength = RollStat() + racialBonuses[0],
+                Dexterity = RollStat() + racialBonuses[1],
+                Constitution = RollStat() + racialBonuses[2],
+                Intelligence = RollStat() + racialBonuses[3],
+                Wisdom = RollStat() + racialBonuses[4],
+                Charisma = RollStat() + racialBonuses[5],
                 HitPoints = RollHP(hitDiceNumber, charLevel),
             };
             stats.CalculateModifiers();
             return stats;
         }
-
-
-        //public static CharacterStats CharacterMods()
-        //{
-        //    CharacterStats stats = new CharacterStats
-        //    {
-        //        strMod = GetModifier(Strength),
-        //        Dexterity = RollStat(),
-        //        Constitution = RollStat(),
-        //        Intelligence = RollStat(),
-        //        Wisdom = RollStat(),
-        //        Charisma = RollStat(),
-        //        HitPoints = RollHP(hitDiceNumber, charLevel),
-
-
-        //    };
-
-        //    return stats;
-        //}
-
         private static int RollStat()
         {
             int[] rolls = new int[4];
@@ -89,16 +71,18 @@ namespace CharSheet
 
             Array.Sort(rolls);
             Array.Reverse(rolls);
-
-            return rolls[0] + rolls[1] + rolls[2];
+            Console.WriteLine("You roll 4d6 and get: " + rolls[0] + ", " + rolls[1] + ", " + rolls[2] + ", & " + rolls[3]);
+            var total = rolls[0] + rolls[1] + rolls[2];
+            Console.WriteLine("Your total is " + total);
+            return total;
         }
 
         private static int RollHP(int hitDiceNumber, int charLevel)
         {
-            HitPointsRoll:
+        HitPointsRoll:
             if (hitDiceNumber >= 0)
             {
-                int HitPoints = 0;
+                int HitPoints = hitDiceNumber;
                 int[] rolls = new int[charLevel];
 
                 for (int i = 0; i < charLevel; i++)
@@ -109,6 +93,8 @@ namespace CharSheet
                 {
                     HitPoints += i;
                 }
+                int floatNum = charLevel - 1;
+                Console.WriteLine("You roll a d" + hitDiceNumber + " " + floatNum + " times plus a flat " + hitDiceNumber + " for a total HP of " + HitPoints);
                 return HitPoints;
             }
             else
@@ -125,8 +111,5 @@ namespace CharSheet
                 goto HitPointsRoll;
             }
         }
-
     }
-
-
 }

@@ -64,6 +64,8 @@ namespace CharSheet
 
 
 
+
+
         ClassChoice:
             Console.WriteLine(characterName + " the " + chosenRace + " is a... what was it again?");
             // Print the numbered list of classes to the console
@@ -105,15 +107,25 @@ namespace CharSheet
 
 
             //Call the API with the class choice
-            HttpResponseMessage response = await client.GetAsync("/api/classes/" + chosenClass.ToLower()); ;
+            HttpResponseMessage response = await client.GetAsync("/api/classes/" + chosenClass.ToLower());
 
             // Read the response content as a string
 
             string responseBody = await response.Content.ReadAsStringAsync();
-            //CharEntry myDeserializedClass = JsonConvert.DeserializeObject(responseBody);
 
             // Do something with the response data
             ClassEntry? classReturn = JsonSerializer.Deserialize<ClassEntry>(responseBody);
+
+            //Call the API with the race choice
+            response = await client.GetAsync("/api/races/" + chosenRace.ToLower());
+
+            // Read the response content as a string
+
+            responseBody = await response.Content.ReadAsStringAsync();
+
+            // Do something with the response data
+            RaceEntry? raceReturn = JsonSerializer.Deserialize<RaceEntry>(responseBody);
+
             Console.Clear();
 
             //Choose the proficiencies
@@ -163,6 +175,7 @@ namespace CharSheet
             //Roll the stats
             Console.WriteLine("Alright! Lets roll some stats! Everyone loves math right?!");
             //I know this is probably redundent, it's something to optimize later.
+            int[] racialBonuses = RacialBonuses(raceReturn);
             int hitDiceNumber = classReturn.hit_die;
             Console.WriteLine("Did you know " + chosenClass + " has a d" + hitDiceNumber + " for a hitdice?");
             if (hitDiceNumber < 10)
@@ -178,8 +191,11 @@ namespace CharSheet
                 Console.WriteLine("Oh my, "+ characterName + " has got some bulk to them.\r\nLet's hope that keeps them on thier feet/wings/fins/or whatever.");
             }
             Console.WriteLine();
+
             //Call the actual method to roll the stats
-            CreateAndReturnStats(hitDiceNumber, charLevel);
+            CreateAndReturnStats(hitDiceNumber, charLevel, racialBonuses);
+            //End stat roll
+
             Console.ReadLine();
 
         End:;
@@ -217,14 +233,14 @@ namespace CharSheet
                     goto ProfsChoice;
                 }
                 returnChoices[i - 1] = playerChoice;
+
             }
-            //Choose and check that the choices are valid integers in the list
             return returnChoices;
         }
 
-        static void CreateAndReturnStats(int hitDiceNumber, int charLevel)
+        static void CreateAndReturnStats(int hitDiceNumber, int charLevel, int[] racialBonuses)
         {
-            CharacterStats stats = DnD5eCharacterStatsRoller.RollCharacterStats(hitDiceNumber, charLevel);
+            CharacterStats stats = DnD5eCharacterStatsRoller.RollCharacterStats(hitDiceNumber, charLevel, racialBonuses);
 
             Console.WriteLine("Your character's stats are:");
             Console.WriteLine($"Hitpoints: {stats.HitPoints}     Hit dice: {hitDiceNumber}");
@@ -234,6 +250,38 @@ namespace CharSheet
             Console.WriteLine($"Intelligence: {stats.Intelligence}    INT({stats.intMod})");
             Console.WriteLine($"Wisdom: {stats.Wisdom}    WIS({stats.wisMod})");
             Console.WriteLine($"Charisma: {stats.Charisma}    CHA({stats.chaMod})");
+            Console.WriteLine("You have a racial bonus of " + racialBonuses[0] + " to STR," + racialBonuses[1] + " to DEX, "
+                + racialBonuses[2] + " to CON, " + racialBonuses[3] + " to INT, " + racialBonuses[4] +
+                " to WIS, and " + racialBonuses[5] + " to CHA,");
+        }
+
+        static int[] RacialBonuses(RaceEntry raceReturn)
+        {
+            //self reference => str dex con int wis cha
+            int[] racialBonuses = { 0, 0, 0, 0, 0, 0 };
+            
+            for(int i = 0; i < raceReturn.ability_bonuses.Count; i++)
+            {
+                string indexFloat = raceReturn.ability_bonuses[i].ability_score.index;
+                switch(indexFloat)
+                {
+                    case "str":
+                        racialBonuses[0] = raceReturn.ability_bonuses[i].bonus; break;
+                    case "dex":
+                        racialBonuses[1] = raceReturn.ability_bonuses[i].bonus; break;
+                    case "con":
+                        racialBonuses[2] = raceReturn.ability_bonuses[i].bonus; break;
+                    case "int":
+                        racialBonuses[3] = raceReturn.ability_bonuses[i].bonus; break;
+                    case "wis":
+                        racialBonuses[4] = raceReturn.ability_bonuses[i].bonus; break;
+                    case "cha":
+                        racialBonuses[5] = raceReturn.ability_bonuses[i].bonus; break;
+                    default: break;
+
+                }
+            }
+            return racialBonuses;
         }
     }
 }

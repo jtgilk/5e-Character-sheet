@@ -14,7 +14,7 @@ namespace PlayerCharacter
         public int HitPoints { get; set; }
         public string Background { get; set; }
         public string Alignment { get; set; }
-        public SkillScores SkillScores { get; set; }
+        public CharacterSkills CharacterSkills { get; set; }
 
 
         public DnD5ePlayerCharacter(string name, string race, string characterClass, int level, AbilityScores abilityScores, int hitPoints, string background, string alignment)

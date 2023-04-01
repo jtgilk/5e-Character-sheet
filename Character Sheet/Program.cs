@@ -5,9 +5,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection.Emit;
 using System.Text.Json;
+using System.IO;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace CharSheet
 {
@@ -29,6 +29,11 @@ namespace CharSheet
         {
             Console.WriteLine("Welcome to the 5e character creator.\r\nPlease enter the name of the character you wish to create to get started.");
             string characterName = Console.ReadLine();
+            while (string.IsNullOrWhiteSpace(characterName))
+            {
+                Console.WriteLine("It appears you've entered an invalid or blank name, try again.");
+                characterName = Console.ReadLine();
+            }
             Console.Clear();
             using var client = new HttpClient();
 
@@ -246,6 +251,21 @@ namespace CharSheet
                     Console.WriteLine("{0}: {1} ({2})", kvp.Key, kvp.Value.Proficiency ? "proficient" : "not proficient", kvp.Value.Bonus);
                 }
             }
+            Console.WriteLine("Would you like to save the character to your drive? Y/N");
+            continueOn = Console.ReadLine();
+            if (continueOn == "Y" || continueOn == "y" || continueOn == "yes" || continueOn == "Yes")
+            {
+                    string jsonString = JsonSerializer.Serialize(playerCharacter);
+
+                    string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "saved characters");
+                    Directory.CreateDirectory(folderPath);
+
+                    string filePath = Path.Combine(folderPath, characterName + ".json");
+                    File.WriteAllText(filePath, jsonString);
+
+                    Console.WriteLine("Character saved to file: " + filePath);
+            }
+
 
 
 
